@@ -1,0 +1,1 @@
+namespace Wordle.Api.Service;
