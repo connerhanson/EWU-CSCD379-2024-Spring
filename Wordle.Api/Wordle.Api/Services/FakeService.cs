@@ -1,1 +1,1 @@
-namespace Wordle.Api.Service;
+namespace Wordle.Api.Services;
