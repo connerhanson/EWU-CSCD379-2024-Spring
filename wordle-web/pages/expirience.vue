@@ -82,7 +82,7 @@ const fetchJobExperiences = async () => {
 
 const addJobEntry = async () => {
   try {
-    const response = await Axios.post('/api/jobexperiences/PostJobExperiences', {
+    const response = await Axios.post('/api/jobexperiences/PostJobExperience', {
       id: 0,
       title: newJob.value.title,
       years: newJob.value.years,
