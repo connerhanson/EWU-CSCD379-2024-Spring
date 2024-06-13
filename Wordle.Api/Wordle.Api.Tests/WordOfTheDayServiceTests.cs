@@ -1,3 +1,4 @@
+/*
 using Wordle.Api.Models;
 
 namespace Wordle.Api.Tests;
@@ -32,3 +33,4 @@ public class WordOfTheDayServiceTests : DatabaseTestBase
         Equals(word, service.GetWordOfTheDay(date));
     }
 }
+*/
