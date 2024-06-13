@@ -1,23 +1,19 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System;
-using System.Text;
 using Wordle.Api;
-using Wordle.Api.Identity;
 using Wordle.Api.Models;
-using Wordle.Api.Services;
+//using Wordle.Api.Services;
 
 var AllOrigins = "AllOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<WordleDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+//test for workflow pt 2 can delete
 
 // Add services to the container.
 builder.Services.AddCors(options =>
@@ -33,81 +29,26 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(config => {
-    config.SwaggerDoc("v1", new OpenApiInfo {Title = "WordleAPI", Version = "v1"});
-    config.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
-          Description = "JWT Authorization header using bearer scheme. Example: \"Authorization: Bearer {token}\"",
-          Name = "Authorization",
-          In = ParameterLocation.Header,
-          Type = SecuritySchemeType.Http,
-          Scheme = "Bearer"
-        });
-    config.AddSecurityRequirement(new OpenApiSecurityRequirement{
-        {
-          new OpenApiSecurityScheme
-          {
-            Reference = new OpenApiReference
-            {
-              Type = ReferenceType.SecurityScheme,
-              Id = "Bearer"
-            }
-          },
-          new List<string>()
-        }
-    });
-});
+builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<WordOfTheDayService>();
-builder.Services.AddScoped<GameService>();
-
-// Identity Services
-builder.Services.AddIdentityCore<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<WordleDbContext>(); // Tell identity where to sstore things
-
-// JWT Token Setup
-JwtConfiguration jwtConfig = builder.Configuration
-    .GetSection("Jwt").Get<JwtConfiguration>() ?? throw new InvalidOperationException("JWT config not specified");
-builder.Services.AddSingleton(jwtConfig);
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtConfig.Issuer,
-            ValidAudience = jwtConfig.Audience,
-
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.Secret))
-        }
-    );
-
-
-builder.Services.AddAuthorization(options => {
-    options.AddPolicy(Policies.MasterOfTheUniverse, Policies.AddRemoveWordPoliciy);
-    options.AddPolicy(Policies.IsTwentyOne, Policies.AddRemoveWordPoliciy);
-});
+//builder.Services.AddScoped<WordOfTheDayService>();
+//builder.Services.AddScoped<GameService>();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<WordleDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
-    await Seeder.Seed(db);
-    await IdentitySeed.SeedAsync(
-        scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>(),
-        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>(),
-        db);
+    //await Seeder.Seed(db);
+    //ENSURE CREATED
 }
 
+// Configure the HTTP request pipeline.
 
 app.UseSwagger();
+    
 app.UseSwaggerUI();
-
 
 app.UseHttpsRedirection();
 

@@ -1,50 +1,33 @@
 <template>
   <NuxtLayout>
     <v-app>
-      <v-app-bar color="primary" :elevation="2">
-        <template v-slot:prepend>
-          <v-icon color="secondary"> mdi-book </v-icon>
-        </template>
-
-        <v-app-bar-title>WordleApp</v-app-bar-title>
-
+      <v-app-bar color="primary" dense :elevation="2">
+        <v-app-bar-title>Resume</v-app-bar-title>
+        <v-spacer></v-spacer>
         <v-btn @click="router.push('/')">Home</v-btn>
-        <v-btn @click="router.push('/wordEditor')">Word Editor</v-btn>
-        <v-btn icon="mdi-theme-light-dark" @click="toggleTheme" />
-        <v-btn icon="mdi-help-circle" @click="showHelpDialog = true" />
-        <HelpDialog v-model="showHelpDialog" />
-        <v-btn icon="mdi-login" @click="showLoginDialog = true" /> 
+        <v-btn icon="mdi-theme-light-dark" @click="toggleTheme"/>
+        <div class="switch-container">
+          <v-switch v-model="editMode" hide-details></v-switch>
+          <div class="switch-label">{{ editMode ? 'Edit' : 'View' }}</div>
+        </div>
       </v-app-bar>
-       <v-dialog v-model="showLoginDialog" max-width="600px">
-        <Login @login="handleLogin" />
-      </v-dialog>
       <v-main>
-        <NuxtPage />
+        <NuxtPage :isEdit="editMode" />
       </v-main>
     </v-app>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+import { useRouter } from "vue-router";
 import { useTheme } from "vuetify";
 import nuxtStorage from "nuxt-storage";
-import Login from './components/Login.vue';
 
 const router = useRouter();
 const theme = useTheme();
-const showHelpDialog = ref(false);
-const showLoginDialog = ref(false);
-const user = ref(null);
+let editMode = ref(false);
 
-const handleLogin = (userInfo) => {
-  user.value = userInfo;
-  showLoginDialog.value = false;
-};
 
-onMounted(() => {
-  var defaultTheme = nuxtStorage.localStorage.getData("theme");
-  theme.global.name.value = defaultTheme ?? "dark";
-});
 
 function toggleTheme() {
   if (theme.global.name.value === "light") {
@@ -55,4 +38,23 @@ function toggleTheme() {
 
   nuxtStorage.localStorage.setData("theme", theme.global.name.value);
 }
+
+// Set editMode to false (View mode) by default
+editMode.value = false;
 </script>
+
+<style scoped>
+.switch-container {
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* Pushes the switch container to the right */
+  padding-right: 24px; /* Adds some padding to align with app bar edges */
+}
+
+.switch-label {
+  font-size: 12px; /* Adjust label font size */
+  color: #fff;
+  margin-left: 8px; /* Add some space between switch and label */
+}
+</style>
+
